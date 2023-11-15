@@ -217,8 +217,7 @@ void RdmaBase::poll_handler()
         // It will be blocking inside `ibv_get_cq_event()` forever when the connection stops
         // But it just works anyway, when `main()` exits, this thread will be killed
 
-        ibv_wc wc;
-        memset_zero(&wc);
+        ibv_wc wc{};
 
         ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
         ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
@@ -292,12 +291,9 @@ void RdmaBase::post_receive()
 
 void RdmaBase::post_send(uint32_t size)
 {
-    ibv_send_wr wr;
+    ibv_send_wr wr{};
     ibv_send_wr* bad_wr = nullptr;
-    ibv_sge sge;
-
-    memset_zero(&wr);
-    memset_zero(&sge);
+    ibv_sge sge{};
 
     // Only 1 scatter/gather entry (SGE)
 
@@ -320,7 +316,8 @@ void RdmaBase::post_send(uint32_t size)
 
 void RdmaBase::build_qp_init_attr(ibv_cq* const cq, ibv_qp_init_attr* qp_attr)
 {
-    memset_zero(qp_attr);
+    // Initialize to zero
+    *qp_attr = ibv_qp_init_attr{};
 
     qp_attr->send_cq = cq;
     qp_attr->recv_cq = cq;

@@ -61,8 +61,7 @@ void RdmaServer::on_conn_request(rdma_cm_id* const id)
         m_cb_qp_ready();
     }
 
-    rdma_conn_param param;
-    memset_zero(&param);
+    rdma_conn_param param{};
     ENSURE_ERRNO(rdma_accept(id, &param) == 0);
 }
 

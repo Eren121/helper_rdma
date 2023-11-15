@@ -1,7 +1,6 @@
 #pragma once
 
-#include "helper_tcp/helper_socket.h"
-#include "helper_tcp/helper_memory.h"
+#include "helper_errno.h"
 #include <rdma/rdma_cma.h>
 #include <netdb.h>
 #include <pthread.h>

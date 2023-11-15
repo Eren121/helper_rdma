@@ -1,10 +1,36 @@
 #include "rdma_client.h"
 #include "rdma_server.h"
-#include "helper_tcp/timer.h"
 
 #include <cstdlib>
 #include <string>
 #include <climits>
+#include <chrono>
+#include <iostream>
+
+class Timer {
+public:
+    Timer(const std::string& title = "") : title_(title), beg_(clock_::now()) {}
+
+    void reset() { beg_ = clock_::now(); }
+
+    void print() {
+        if(!title_.empty()) {
+            std::cout << title_ << ": ";
+        }
+
+        std::cout << "elapsed: " << elapsed() << "s" << std::endl;
+    }
+
+    double elapsed() const {
+        return std::chrono::duration_cast<second_> (clock_::now() - beg_).count();
+    }
+
+private:
+    std::string title_;
+    typedef std::chrono::high_resolution_clock clock_;
+    typedef std::chrono::duration<double, std::ratio<1> > second_;
+    std::chrono::time_point<clock_> beg_;
+};
 
 int main(int argc, char *argv[])
 {

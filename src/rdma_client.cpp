@@ -1,4 +1,7 @@
 #include "rdma_client.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 const int timeout_ms = 1'000 * 60; // 1min
 
@@ -72,8 +75,7 @@ void RdmaClient::on_addr_resolved(rdma_cm_id* const id)
 
 void RdmaClient::on_route_resolved(rdma_cm_id* const id)
 {
-    rdma_conn_param param;
-    memset_zero(&param);
+    rdma_conn_param param{};
     ENSURE_ERRNO(rdma_connect(id, &param) == 0);
 }
 
