@@ -76,7 +76,7 @@ void RdmaCM::connect_to_server(const std::string& addr, int port)
                 return false; // Breaks the event loop
 
             default:
-                fatal_error("Unknown RDMA event: %d", (int)event->event);
+                FATAL_ERROR("connect_to_server(): Unknown RDMA event: %d", (int)event->event);
                 break;
         }
     }
@@ -126,7 +126,7 @@ void RdmaCM::run_server(int port)
                 break;
 
             default:
-                fatal_error("Unknown RDMA event: %d", (int)event->event);
+                FATAL_ERROR("Unknown RDMA event: %d", (int)event->event);
                 done = true;
                 break;
         }

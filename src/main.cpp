@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        fatal_error("Usage: %s (-c|-s) address port", argv[0]);
+        FATAL_ERROR("Usage: %s (-c|-s) address port", argv[0]);
     }
 
     const size_t bytes_sent = static_cast<size_t>(num_trials) * static_cast<size_t>(buf_size);

@@ -64,7 +64,7 @@ void RdmaBase::wait_for_send(uint32_t size)
 
     if(wc.opcode != IBV_WC_SEND)
     {
-        fatal_error("Next event should be IBV_WC_SEND");
+        FATAL_ERROR("Next event should be IBV_WC_SEND");
     }
 }
 
@@ -79,7 +79,7 @@ void RdmaBase::wait_for_recv(uint32_t& size)
 
     if(!(wc.opcode & IBV_WC_RECV))
     {
-        fatal_error("Next event should be IBV_WC_RECV");
+        FATAL_ERROR("Next event should be IBV_WC_RECV");
     }
 
     // `ibv_wc.byte_len` stores the actual data received
@@ -117,7 +117,7 @@ ibv_wc RdmaBase::wait_event()
 
         if(ret.status != IBV_WC_SUCCESS)
         {
-            fatal_error("Failed status %s (%d) for wr_id %d\n",
+            FATAL_ERROR("Failed status %s (%d) for wr_id %d\n",
                         ibv_wc_status_str(ret.status),
                         ret.status,
                         (int) ret.wr_id);
@@ -170,7 +170,7 @@ void RdmaBase::setup_context(ibv_context* const context)
     {
         if(m_context != context)
         {
-            fatal_error("Can't handle more than one context");
+            FATAL_ERROR("Can't handle more than one context");
         }
 
         return;
@@ -236,7 +236,7 @@ void RdmaBase::poll_handler()
 
             if(wc.status != IBV_WC_SUCCESS)
             {
-                fatal_error("Failed status %s (%d) for wr_id %d\n",
+                FATAL_ERROR("Failed status %s (%d) for wr_id %d\n",
                             ibv_wc_status_str(wc.status),
                             wc.status,
                             (int) wc.wr_id);

@@ -34,6 +34,10 @@ void fatal_errno(const char *info)
     exit(EXIT_FAILURE);
 }
 
+#ifndef FATAL_ERROR
+#define FATAL_ERROR(...) printf("%s:%d: ", __FILE__, __LINE__); fatal_error(__VA_ARGS__)
+#endif
+
 static inline
 void fatal_error(const char *fmt, ...)
 {

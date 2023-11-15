@@ -44,7 +44,7 @@ bool RdmaClient::on_event_received(rdma_cm_event* const event)
             return false; // Breaks the event loop
 
         default:
-            fatal_error("Unknown RDMA event: %d", (int)event->event);
+            FATAL_ERROR("on_event_received(): Unknown RDMA event: %d", (int)event->event);
             break;
     }
 
@@ -120,7 +120,7 @@ void RdmaClient::wait_until_connected()
                 break;
 
             default:
-                fatal_error("Unknown RDMA event: %d", static_cast<int>(event.event));
+                FATAL_ERROR("Unknown RDMA event: %d", static_cast<int>(event.event));
                 break;
         }
     }
