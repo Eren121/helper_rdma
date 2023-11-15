@@ -79,7 +79,7 @@ void RdmaBase::wait_for_recv(uint32_t& size)
 {
     // 1) Wait for the acknowledgment
     const ibv_wc wc = wait_event();
-
+    
     if(!(wc.opcode & IBV_WC_RECV))
     {
         FATAL_ERROR("Next event should be IBV_WC_RECV");

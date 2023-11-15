@@ -81,8 +81,11 @@ public:
      * Blocking.
      * @param first_op Which operation should be done first, either a receive or a send.
      * Because we need to add elements to completion queue before the work is arriving.
+     *
+     * @param sender true if this should send the first message.
+     *               false if this should receive the first message.
      */
-    virtual void wait_until_connected() = 0;
+    virtual void wait_until_connected(bool sender) = 0;
 
     /**
      * Wait until data is sent.

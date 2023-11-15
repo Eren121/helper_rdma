@@ -24,7 +24,7 @@ bool RdmaServer::on_event_received(rdma_cm_event* const event)
     switch(event->event)
     {
         case RDMA_CM_EVENT_CONNECT_REQUEST:
-            on_conn_request(event->id);
+            on_conn_request(event->id, false);
             break;
         
         case RDMA_CM_EVENT_ESTABLISHED:
@@ -44,7 +44,7 @@ bool RdmaServer::on_event_received(rdma_cm_event* const event)
     return true;
 }
 
-void RdmaServer::on_conn_request(rdma_cm_id* const id)
+void RdmaServer::on_conn_request(rdma_cm_id* const id, bool pre_post_recv)
 {
     setup_context(id->verbs);
     
@@ -58,7 +58,10 @@ void RdmaServer::on_conn_request(rdma_cm_id* const id)
 
     // Pre-post receive event on the to be sure there is one receive work
     // before the remote sends a message
-    post_receive();
+    if(pre_post_recv)
+    {
+        post_receive();
+    }
 
     rdma_conn_param param{};
     ENSURE_ERRNO(rdma_accept(id, &param) == 0);
@@ -76,7 +79,7 @@ void RdmaServer::on_disconnect(rdma_cm_id* const id)
     ENSURE_ERRNO(rdma_destroy_id(id) == 0);
 }
 
-void RdmaServer::wait_until_connected()
+void RdmaServer::wait_until_connected(bool sender)
 {
     bool stop = false;
     while(!stop)
@@ -86,7 +89,7 @@ void RdmaServer::wait_until_connected()
         switch(event.event)
         {
             case RDMA_CM_EVENT_CONNECT_REQUEST:
-                on_conn_request(event.id);
+                on_conn_request(event.id, !sender);
                 break;
 
             case RDMA_CM_EVENT_ESTABLISHED:

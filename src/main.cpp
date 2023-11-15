@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     if(strcmp(argv[1], "-s") == 0)
     {
         RdmaServer server(buf_size, buf_size, addr, port);
-        server.wait_until_connected();
+        server.wait_until_connected(false);
 
         Timer timer("server");
         for(int i = 0; i < num_trials; i++)
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     else if(strcmp(argv[1], "-c") == 0)
     {
         RdmaClient client(buf_size, buf_size, addr, port);
-        client.wait_until_connected();
+        client.wait_until_connected(true);
 
         Timer timer("client");
         for(int i = 0; i < num_trials; i++)
