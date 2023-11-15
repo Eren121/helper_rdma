@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
             // Pre-post the next receive
             // This is for the next iteration
-            if(i != num_trials - 1)
+            //if(i != num_trials - 1)
             {
                 server.post_receive();
             }
