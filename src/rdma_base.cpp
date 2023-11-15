@@ -31,10 +31,16 @@ RdmaBase::~RdmaBase()
         m_event_channel = nullptr;
     }
 
-    if(m_mr)
+    if(m_send_mr)
     {
-        ENSURE_ERRNO(ibv_dereg_mr(m_mr) == 0);
-        m_mr = nullptr;
+        ENSURE_ERRNO(ibv_dereg_mr(m_send_mr) == 0);
+        m_send_mr = nullptr;
+    }
+
+    if(m_recv_mr)
+    {
+        ENSURE_ERRNO(ibv_dereg_mr(m_recv_mr) == 0);
+        m_recv_mr = nullptr;
     }
 }
 
@@ -202,8 +208,12 @@ void RdmaBase::setup_context(ibv_context* const context)
 
     // Register memory region
     const int access = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE;
-    m_mr = ibv_reg_mr(m_pd, m_buf.data(), m_buf.size() * sizeof(m_buf[0]), access);
-    ENSURE_ERRNO(m_mr != nullptr);
+
+    m_send_mr = ibv_reg_mr(m_pd, m_send_buf.data(), m_send_buf.size(), access);
+    ENSURE_ERRNO(m_send_mr != nullptr);
+
+    m_recv_mr = ibv_reg_mr(m_pd, m_recv_buf.data(), m_recv_buf.size(), access);
+    ENSURE_ERRNO(m_recv_mr != nullptr);
 }
 
 void RdmaBase::poll_handler()
@@ -279,11 +289,9 @@ void RdmaBase::post_receive()
     wr.sg_list = &sge;
     wr.num_sge = 1;
 
-    printf("%p/%p\n", m_buf.data(), m_mr->addr);
-
-    sge.addr = (uintptr_t) m_buf.data();
-    sge.length = m_buf.size() * sizeof(m_buf[0]);
-    sge.lkey = m_mr->lkey;
+    sge.addr = (uintptr_t) m_recv_buf.data();
+    sge.length = m_recv_buf.size();
+    sge.lkey = m_recv_mr->lkey;
 
     assert(m_qp != nullptr);
     ENSURE_ERRNO(ibv_post_recv(m_qp, &wr, &bad_wr) == 0);
@@ -306,9 +314,9 @@ void RdmaBase::post_send(uint32_t size)
 
     //printf("%p/%p\n", m_buf.data(), m_mr->addr);
 
-    sge.addr = (uintptr_t) m_buf.data();
-    sge.length = (size == 0 ? m_buf.size() : size);
-    sge.lkey = m_mr->lkey;
+    sge.addr = (uintptr_t) m_send_buf.data();
+    sge.length = (size == 0 ? m_send_buf.size() : size);
+    sge.lkey = m_send_mr->lkey;
 
     assert(m_qp != nullptr);
     ENSURE_ERRNO(ibv_post_send(m_qp, &wr, &bad_wr) == 0);

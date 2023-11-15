@@ -181,10 +181,9 @@ protected:
     ibv_context* m_context = nullptr;
     ibv_pd* m_pd = nullptr;
     ibv_cq* m_cq = nullptr;
-    ibv_mr* m_mr = nullptr;
+    ibv_mr* m_send_mr = nullptr;
+    ibv_mr* m_recv_mr = nullptr;
     ibv_comp_channel* m_comp_channel = nullptr;
-
-    std::vector<uint8_t> m_buf;
 
     pthread_t m_handler_thread;
 
