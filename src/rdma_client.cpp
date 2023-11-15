@@ -96,7 +96,7 @@ void RdmaClient::on_disconnect(rdma_cm_id* const id)
     ENSURE_ERRNO(rdma_destroy_id(id) == 0);
 }
 
-void RdmaClient::wait_until_connected(Operation first_op)
+void RdmaClient::wait_until_connected()
 {
     bool stop = false;
     while(!stop)

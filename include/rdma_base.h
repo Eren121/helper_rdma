@@ -82,7 +82,7 @@ public:
      * @param first_op Which operation should be done first, either a receive or a send.
      * Because we need to add elements to completion queue before the work is arriving.
      */
-    virtual void wait_until_connected(Operation first_op) = 0;
+    virtual void wait_until_connected() = 0;
 
     /**
      * Wait until data is sent.
@@ -105,7 +105,7 @@ public:
     void run_event_loop();
 
     using Callback = std::function<void()>;
-    
+
     /**
      * Called when the connection is established.
      * The queue pair is ready in the callback.
