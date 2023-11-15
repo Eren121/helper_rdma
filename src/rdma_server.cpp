@@ -56,11 +56,9 @@ void RdmaServer::on_conn_request(rdma_cm_id* const id)
     m_qp = id->qp;
     m_qp_id = id;
 
-    // Call callback
-    if(m_cb_qp_ready)
-    {
-        m_cb_qp_ready();
-    }
+    // Pre-post receive event on the to be sure there is one receive work
+    // before the remote sends a message
+    post_receive();
 
     rdma_conn_param param{};
     ENSURE_ERRNO(rdma_accept(id, &param) == 0);

@@ -16,11 +16,6 @@
 class RdmaBase
 {
 public:
-    enum class Operation {
-        SEND,
-        RECV
-    };
-
     /**
      * Represents a block of contiguous memory.
      * This has a pointer to a data and a size.
@@ -110,22 +105,7 @@ public:
     void run_event_loop();
 
     using Callback = std::function<void()>;
-
-    /**
-     * Be notified when the queue pair is created.
-     * Works can be submitted to the queue when the callback is called.
-     * 
-     * But the connection is not yet established.
-     * For example, we could need to pre-post receive event on the RX to be sure therer is one receive work
-     * before the TX sends a message.
-     * 
-     * The callback should be called by the child class.
-     */
-    void set_queue_pair_ready_callback(Callback callback)
-    {
-        m_cb_qp_ready = callback;
-    }
-
+    
     /**
      * Called when the connection is established.
      * The queue pair is ready in the callback.

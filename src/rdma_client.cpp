@@ -55,7 +55,7 @@ void RdmaClient::on_addr_resolved(rdma_cm_id* const id)
 {
     setup_context(id->verbs);
 
-    ibv_qp_init_attr attr;
+    ibv_qp_init_attr attr{};
     build_qp_init_attr(m_cq, &attr);
     ENSURE_ERRNO(rdma_create_qp(id, m_pd, &attr) == 0);
 
@@ -63,11 +63,9 @@ void RdmaClient::on_addr_resolved(rdma_cm_id* const id)
     m_qp = id->qp;
     m_qp_id = id;
 
-    // Call callback
-    if(m_cb_qp_ready)
-    {
-        m_cb_qp_ready();
-    }
+    // Pre-post receive event on the to be sure there is one receive work
+    // before the remote sends a message
+    post_receive();
 
     const int timeout_ms = 1'000 * 60; // 1min
     ENSURE_ERRNO(rdma_resolve_route(id, timeout_ms) == 0);
