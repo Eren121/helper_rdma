@@ -54,12 +54,15 @@ int main(int argc, char *argv[])
         for(int i = 0; i < num_trials; i++)
         {
             uint32_t recv_sz{0};
-            server.wait_for_recv(recv_sz);
 
+            // Pre-post the next receive
+            // This is for the next iteration
             if(i != num_trials - 1)
             {
                 server.post_receive();
             }
+
+            server.wait_for_recv(recv_sz);
         }
     }
     else if(strcmp(argv[1], "-c") == 0)
