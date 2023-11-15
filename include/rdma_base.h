@@ -82,23 +82,25 @@ public:
      * @param first_op Which operation should be done first, either a receive or a send.
      * Because we need to add elements to completion queue before the work is arriving.
      *
-     * @param sender true if this should send the first message.
-     *               false if this should receive the first message.
+     * @param sender false if this function should pre-post a receiving request.
+     *               true otherwise.
      */
     virtual void wait_until_connected(bool sender) = 0;
 
     /**
      * Wait until data is sent.
+     * Does not post any "send" request, this should have been post beforehand.
      * Blocking.
      * @param size The size of the data to send.
      * This should be less or equals the sending buffer size.
      * This will send the first `size` bytes of the sending buffer.
      * It is possible to send less data that the sending buffer size to save bandwidth.
      */
-    void wait_for_send(uint32_t size);
+    void wait_for_send();
 
     /**
      * Wait until data is received.
+     * Does not post any "recv" request, this should have been post beforehand.
      * Blocking.
      * @param[out] size The actual size of the data received.
      * This should be less or equals the receiving buffer size.

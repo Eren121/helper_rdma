@@ -60,12 +60,8 @@ RdmaBase::Buffer RdmaBase::get_recv_buf()
     };
 }
 
-void RdmaBase::wait_for_send(uint32_t size)
+void RdmaBase::wait_for_send()
 {
-    // 1) Post the "send" in the queue
-    post_send(size);
-
-    // 2) Wait for the acknowledgment
     const ibv_wc wc = wait_event();
 
     if(wc.opcode != IBV_WC_SEND)
@@ -77,9 +73,8 @@ void RdmaBase::wait_for_send(uint32_t size)
 
 void RdmaBase::wait_for_recv(uint32_t& size)
 {
-    // 1) Wait for the acknowledgment
     const ibv_wc wc = wait_event();
-    
+
     if(!(wc.opcode & IBV_WC_RECV))
     {
         FATAL_ERROR("Next event should be IBV_WC_RECV");
@@ -87,12 +82,6 @@ void RdmaBase::wait_for_recv(uint32_t& size)
 
     // `ibv_wc.byte_len` stores the actual data received
     size = wc.byte_len;
-
-    // 2) Re-post the "receive" in the queue
-    // So that we are ready to handle the next "receive" operation
-    // For the first "receive",
-    // it is pre-posted when the connection is established by the children classes.
-    post_receive();
 }
 
 rdma_cm_event RdmaBase::wait_cm_event()

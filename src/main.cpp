@@ -55,6 +55,11 @@ int main(int argc, char *argv[])
         {
             uint32_t recv_sz{0};
             server.wait_for_recv(recv_sz);
+
+            if(i != num_trials - 1)
+            {
+                server.post_receive();
+            }
         }
     }
     else if(strcmp(argv[1], "-c") == 0)
@@ -65,7 +70,8 @@ int main(int argc, char *argv[])
         Timer timer("client");
         for(int i = 0; i < num_trials; i++)
         {
-            client.wait_for_send(buf_size);
+            client.post_send(buf_size);
+            client.wait_for_send();
         }
     }
     else
