@@ -16,6 +16,11 @@
 class RdmaBase
 {
 public:
+    enum class Operation {
+        SEND,
+        RECV
+    };
+
     /**
      * Represents a block of contiguous memory.
      * This has a pointer to a data and a size.
@@ -79,8 +84,10 @@ public:
     /**
      * Wait until the RDMA connection is setup, and the RDMA operations are ready to start.
      * Blocking.
+     * @param first_op Which operation should be done first, either a receive or a send.
+     * Because we need to add elements to completion queue before the work is arriving.
      */
-    virtual void wait_until_connected() = 0;
+    virtual void wait_until_connected(Operation first_op) = 0;
 
     /**
      * Wait until data is sent.

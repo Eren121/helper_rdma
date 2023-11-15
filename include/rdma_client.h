@@ -9,7 +9,7 @@ public:
     RdmaClient(uint32_t send_buf_sz, uint32_t recv_buf_sz, const std::string& server_addr, int server_port);
     ~RdmaClient() override;
 
-    void wait_until_connected() override;
+    void wait_until_connected(Operation first_op) override;
 
 protected:
     bool on_event_received(rdma_cm_event* const event) override;
