@@ -349,7 +349,7 @@ void RdmaBase::post_send(uint32_t size)
 void RdmaBase::build_qp_init_attr(ibv_cq* const cq, ibv_qp_init_attr* qp_attr)
 {
     // Initialize to zero
-    *qp_attr = ibv_qp_init_attr{};
+    std::memset(qp_attr, 0, sizeof(*qp_attr));
 
     qp_attr->send_cq = cq;
     qp_attr->recv_cq = cq;

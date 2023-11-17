@@ -48,7 +48,7 @@ void RdmaServer::on_conn_request(rdma_cm_id* const id)
 {
     setup_context(id->verbs);
     
-    ibv_qp_init_attr attr;
+    ibv_qp_init_attr attr{};
     build_qp_init_attr(m_cq, &attr);
     ENSURE_ERRNO(rdma_create_qp(id, m_pd, &attr) == 0);
     
