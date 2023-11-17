@@ -141,12 +141,8 @@ ibv_wc RdmaBase::wait_event()
     // Wait first event
     {
         const int num_completions = ibv_poll_cq(cq, 1, &ret);
-        ENSURE_ERRNO(num_completions >= 0);
+        ENSURE_ERRNO(num_completions == 1);
 
-        if(num_completions == 0)
-        {
-            break;
-        }
 
         if(ret.status != IBV_WC_SUCCESS)
         {
