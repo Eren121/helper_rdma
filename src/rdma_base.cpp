@@ -129,8 +129,6 @@ rdma_cm_event RdmaBase::wait_cm_event()
 
 ibv_wc RdmaBase::wait_event()
 {
-    ibv_cq* cq{nullptr};
-    void* user_context{nullptr};
     ibv_wc ret{};
 
     bool running = true;
@@ -138,9 +136,13 @@ ibv_wc RdmaBase::wait_event()
     {
         if(!m_event_alive)
         {
-            ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
-            ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
-            ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
+            ENSURE_ERRNO(ibv_get_cq_event(
+                m_comp_channel,
+                &m_event_cq,
+                &m_event_user_context) == 0);
+
+            ibv_ack_cq_events(m_event_cq, 1); // Each event should be acknowledged
+            ENSURE_ERRNO(ibv_req_notify_cq(m_event_cq, 0) == 0);
 
             m_event_alive = true;
         }
@@ -150,7 +152,7 @@ ibv_wc RdmaBase::wait_event()
         // 100% CPU usage!
         while(true)
         {
-            const int num_completions = ibv_poll_cq(cq, 1, &ret);
+            const int num_completions = ibv_poll_cq(m_event_cq, 1, &ret);
             ENSURE_ERRNO(num_completions >= 0);
 
             if(num_completions == 0)
