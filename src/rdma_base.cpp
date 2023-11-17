@@ -134,9 +134,10 @@ ibv_wc RdmaBase::wait_event()
     ibv_wc ret{};
 
     ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
-    ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
 
     ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
+
+    ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
 
     // `ibv_poll_cq` is non-blocking
     // This will loop until one event is popped
