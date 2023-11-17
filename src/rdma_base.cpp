@@ -133,39 +133,41 @@ ibv_wc RdmaBase::wait_event()
     void* user_context{nullptr};
     ibv_wc ret{};
 
-    ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
-
-    ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
-
-    ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
-
-    // `ibv_poll_cq` is non-blocking
-    // This will loop until one event is popped
-    // 100% CPU usage!
     while(true)
     {
-        const int num_completions = ibv_poll_cq(cq, 1, &ret);
-        ENSURE_ERRNO(num_completions >= 0);
+        ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
 
-        if(num_completions == 0)
+        ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
+
+        ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
+
+        // `ibv_poll_cq` is non-blocking
+        // This will loop until one event is popped
+        // 100% CPU usage!
+        while(true)
         {
-            // No event yet
-            continue;
-        }
-        else
-        {
-            if(ret.status != IBV_WC_SUCCESS)
+            const int num_completions = ibv_poll_cq(cq, 1, &ret);
+            ENSURE_ERRNO(num_completions >= 0);
+
+            if(num_completions == 0)
             {
-                FATAL_ERROR("Failed status %s (%d) for wr_id %d\n",
-                            ibv_wc_status_str(ret.status),
-                            ret.status,
-                            (int) ret.wr_id);
+                // No event yet
+                break;
             }
+            else
+            {
+                if(ret.status != IBV_WC_SUCCESS)
+                {
+                    FATAL_ERROR("Failed status %s (%d) for wr_id %d\n",
+                                ibv_wc_status_str(ret.status),
+                                ret.status,
+                                (int) ret.wr_id);
+                }
 
-            break;
+                return ret;
+            }
         }
     }
-
 
     return ret;
 }
