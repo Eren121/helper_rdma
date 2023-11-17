@@ -133,16 +133,27 @@ ibv_wc RdmaBase::wait_event()
     void* user_context{nullptr};
     ibv_wc ret{};
 
-    ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
-    ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
+    if(!m_event_alive)
+    {
+        ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
+        ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
 
-    ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
+        ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
+
+        m_event_alive = true;
+    }
 
     // Wait first event
     {
         const int num_completions = ibv_poll_cq(cq, 1, &ret);
-        ENSURE_ERRNO(num_completions == 1);
+        ENSURE_ERRNO(num_completions >= 0);
 
+        if(num_completions == 0)
+        {
+            // Process next event
+            m_event_alive = false;
+            return wait_event();
+        }
 
         if(ret.status != IBV_WC_SUCCESS)
         {
