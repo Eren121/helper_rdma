@@ -168,7 +168,8 @@ ibv_wc RdmaBase::wait_event()
                                 (int) ret.wr_id);
                 }
 
-                return ret;
+                running = false;
+                break;
             }
         }
     }
