@@ -129,6 +129,8 @@ rdma_cm_event RdmaBase::wait_cm_event()
 
 ibv_wc RdmaBase::wait_event()
 {
+    // This is kind of a coroutine instead of polling the events in a different thread
+
     ibv_wc ret{};
 
     bool running = true;
