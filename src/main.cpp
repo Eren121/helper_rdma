@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
         {
             server.msg_recv([](uint32_t request_sz, uint32_t& response_sz) {
 
-                response_sz = 0;
+                response_sz = 1;
             });
         }
     }
