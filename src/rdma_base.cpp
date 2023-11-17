@@ -323,9 +323,12 @@ void RdmaBase::post_receive()
 
 void RdmaBase::post_send(uint32_t size)
 {
-    ibv_send_wr wr{};
+    ibv_send_wr wr;
     ibv_send_wr* bad_wr = nullptr;
-    ibv_sge sge{};
+    ibv_sge sge;
+
+    memset(&wr, 0, sizeof(wr));
+    memset(&sge, 0, sizeof(sge));
 
     // Only 1 scatter/gather entry (SGE)
 
@@ -355,8 +358,8 @@ void RdmaBase::build_qp_init_attr(ibv_cq* const cq, ibv_qp_init_attr* qp_attr)
     qp_attr->recv_cq = cq;
     qp_attr->qp_type = IBV_QPT_RC;
 
-    qp_attr->cap.max_send_wr = 1'000;
-    qp_attr->cap.max_recv_wr = 1'000;
+    qp_attr->cap.max_send_wr = 100;
+    qp_attr->cap.max_recv_wr = 100;
     qp_attr->cap.max_send_sge = 1;
     qp_attr->cap.max_recv_sge = 1;
 }
