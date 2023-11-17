@@ -151,13 +151,17 @@ ibv_wc RdmaBase::wait_event()
             // No event yet
             continue;
         }
-
-        if(ret.status != IBV_WC_SUCCESS)
+        else
         {
-            FATAL_ERROR("Failed status %s (%d) for wr_id %d\n",
-                        ibv_wc_status_str(ret.status),
-                        ret.status,
-                        (int) ret.wr_id);
+            if(ret.status != IBV_WC_SUCCESS)
+            {
+                FATAL_ERROR("Failed status %s (%d) for wr_id %d\n",
+                            ibv_wc_status_str(ret.status),
+                            ret.status,
+                            (int) ret.wr_id);
+            }
+
+            break;
         }
     }
 
