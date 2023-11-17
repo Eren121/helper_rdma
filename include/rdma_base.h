@@ -231,7 +231,6 @@ protected:
     Callback m_cb_qp_ready;
 
 private:
-    bool m_event_alive{false};
     std::vector<uint8_t> m_send_buf;
     std::vector<uint8_t> m_recv_buf;
 };

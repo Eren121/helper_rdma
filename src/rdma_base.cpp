@@ -133,26 +133,23 @@ ibv_wc RdmaBase::wait_event()
     void* user_context{nullptr};
     ibv_wc ret{};
 
-    if(!m_event_alive)
-    {
-        ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
-        ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
+    ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
+    ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
 
-        ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
+    ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
 
-        m_event_alive = true;
-    }
-
-    // Wait first event
+    // `ibv_poll_cq` is non-blocking
+    // This will loop until one event is popped
+    // 100% CPU usage!
+    while(true)
     {
         const int num_completions = ibv_poll_cq(cq, 1, &ret);
         ENSURE_ERRNO(num_completions >= 0);
 
         if(num_completions == 0)
         {
-            // Process next event
-            m_event_alive = false;
-            return wait_event();
+            // No event yet
+            continue;
         }
 
         if(ret.status != IBV_WC_SUCCESS)
