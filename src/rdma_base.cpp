@@ -141,7 +141,12 @@ ibv_wc RdmaBase::wait_event()
     // Wait first event
     {
         const int num_completions = ibv_poll_cq(cq, 1, &ret);
-        ENSURE_ERRNO(num_completions == 1);
+        ENSURE_ERRNO(num_completions >= 0);
+
+        if(num_completions == 0)
+        {
+            break;
+        }
 
         if(ret.status != IBV_WC_SUCCESS)
         {
@@ -152,12 +157,6 @@ ibv_wc RdmaBase::wait_event()
         }
     }
 
-    // Second event should be empty to notify end of queue
-    {
-        ibv_wc tmp{};
-        const int num_completions = ibv_poll_cq(cq, 1, &tmp);
-        ENSURE_ERRNO(num_completions == 0);
-    }
 
     return ret;
 }
