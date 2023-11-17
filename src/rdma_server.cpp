@@ -16,7 +16,7 @@ RdmaServer::RdmaServer(uint32_t send_buf_sz, uint32_t recv_buf_sz, const std::st
 
 RdmaServer::~RdmaServer()
 {
-    ENSURE(pthread_cancel(m_handler_thread) == 0);
+    //ENSURE(pthread_cancel(m_handler_thread) == 0);
 }
 
 bool RdmaServer::on_event_received(rdma_cm_event* const event)
