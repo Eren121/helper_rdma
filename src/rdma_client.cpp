@@ -28,7 +28,7 @@ bool RdmaClient::on_event_received(rdma_cm_event* const event)
     switch(event->event)
     {
         case RDMA_CM_EVENT_ADDR_RESOLVED:
-            on_addr_resolved(event->id, false);
+            on_addr_resolved(event->id);
             break;
 
         case RDMA_CM_EVENT_ROUTE_RESOLVED:
@@ -51,7 +51,7 @@ bool RdmaClient::on_event_received(rdma_cm_event* const event)
     return true;
 }
 
-void RdmaClient::on_addr_resolved(rdma_cm_id* const id, bool pre_post_recv)
+void RdmaClient::on_addr_resolved(rdma_cm_id* const id)
 {
     setup_context(id->verbs);
 
@@ -65,10 +65,7 @@ void RdmaClient::on_addr_resolved(rdma_cm_id* const id, bool pre_post_recv)
 
     // Pre-post receive event on the to be sure there is one receive work
     // before the remote sends a message
-    if(pre_post_recv)
-    {
-        post_receive();
-    }
+    post_receive();
 
     const int timeout_ms = 1'000 * 60; // 1min
     ENSURE_ERRNO(rdma_resolve_route(id, timeout_ms) == 0);
@@ -99,7 +96,7 @@ void RdmaClient::on_disconnect(rdma_cm_id* const id)
     ENSURE_ERRNO(rdma_destroy_id(id) == 0);
 }
 
-void RdmaClient::wait_until_connected(bool sender)
+void RdmaClient::wait_until_connected()
 {
     bool stop = false;
     while(!stop)
@@ -109,7 +106,7 @@ void RdmaClient::wait_until_connected(bool sender)
         switch(event.event)
         {
             case RDMA_CM_EVENT_ADDR_RESOLVED:
-                on_addr_resolved(event.id, !sender);
+                on_addr_resolved(event.id);
                 break;
 
             case RDMA_CM_EVENT_ROUTE_RESOLVED:

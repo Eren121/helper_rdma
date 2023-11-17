@@ -48,33 +48,26 @@ int main(int argc, char *argv[])
     if(strcmp(argv[1], "-s") == 0)
     {
         RdmaServer server(buf_size, buf_size, addr, port);
-        server.wait_until_connected(false);
+        server.wait_until_connected();
 
         Timer timer("server");
         for(int i = 0; i < num_trials; i++)
         {
-            uint32_t recv_sz{0};
+            server.msg_recv([](uint32_t request_sz, uint32_t& response_sz) {
 
-            // Pre-post the next receive
-            // This is for the next iteration
-            //if(i != num_trials - 1)
-            {
-                server.post_receive();
-            }
-
-            server.wait_for_recv(recv_sz);
+                response_sz = 0;
+            });
         }
     }
     else if(strcmp(argv[1], "-c") == 0)
     {
         RdmaClient client(buf_size, buf_size, addr, port);
-        client.wait_until_connected(true);
+        client.wait_until_connected();
 
         Timer timer("client");
         for(int i = 0; i < num_trials; i++)
         {
-            client.post_send(buf_size);
-            client.wait_for_send();
+            client.msg_send(buf_size);
         }
     }
     else

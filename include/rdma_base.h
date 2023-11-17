@@ -84,19 +84,24 @@ public:
      *
      * @param sender false if this function should pre-post a receiving request.
      *               true otherwise.
+     * @note This will pre-post a recv request to be sure the queue is always ready to receive a message.
      */
-    virtual void wait_until_connected(bool sender) = 0;
+    virtual void wait_until_connected() = 0;
 
     /**
      * Wait until data is sent.
      * Does not post any "send" request, this should have been post beforehand.
      * Blocking.
-     * @param size The size of the data to send.
-     * This should be less or equals the sending buffer size.
-     * This will send the first `size` bytes of the sending buffer.
-     * It is possible to send less data that the sending buffer size to save bandwidth.
      */
     void wait_for_send();
+
+    /**
+     * Wait until 1 send and 1 receive event are polled (in any order).
+     * Blocking.
+     * @param[out] size The actual size of the data received.
+     * This should be less or equals the receiving buffer size.
+     */
+    void wait_for_1send_1recv(uint32_t& size);
 
     /**
      * Wait until data is received.
@@ -106,6 +111,49 @@ public:
      * This should be less or equals the receiving buffer size.
      */
     void wait_for_recv(uint32_t& size);
+
+    /**
+     * Send a message. Each message has a response.
+     * The sending buffer should contains the message to send.
+     * After this function, the receiving buffers stores the response.
+     * @param[in] request_sz The size of the data to send from the sending buffer.
+     * @return The response.
+     * The size of the response is less or equals the receiving buffer size,
+     * and the data pointer is the same as the receiving buffer.
+     */
+    Buffer msg_send(uint32_t request_sz)
+    {
+        post_receive();
+        post_send(request_sz);
+
+        Buffer response;
+        response.data = m_recv_buf.data();
+        wait_for_1send_1recv(response.size);
+
+        return response;
+    }
+
+    /**
+     * Receive counterpart of sending a message.
+     * Each `msg_send` should match a `msg_recv`.
+     * @param handler The method to execute to process the request.
+     * Should be of signature `void(uint32_t request_sz, uint32_t& response_sz)`
+     * It should fill the sending buffer with a response and compute the response size.
+     */
+    template<typename Handler>
+    void msg_recv(Handler handler)
+    {
+        post_receive();
+
+        uint32_t request_sz;
+        wait_for_recv(request_sz);
+
+        uint32_t response_sz;
+        handler(request_sz, response_sz);
+
+        post_send(response_sz);
+        wait_for_send();
+    }
 
     void run_event_loop();
 

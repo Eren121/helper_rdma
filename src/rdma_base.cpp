@@ -66,7 +66,37 @@ void RdmaBase::wait_for_send()
 
     if(wc.opcode != IBV_WC_SEND)
     {
-        FATAL_ERROR("Next event should be IBV_WC_SEND");
+        FATAL_ERROR("Expected IBV_WC_SEND event, got something different.");
+    }
+}
+
+void RdmaBase::wait_for_1send_1recv(uint32_t& size)
+{
+    int send_count = 0;
+    int recv_count = 0;
+
+    for(int i = 0; i < 2; i++)
+    {
+        const ibv_wc wc = wait_event();
+
+        if(wc.opcode == IBV_WC_SEND)
+        {
+            send_count++;
+        }
+        else if(wc.opcode & IBV_WC_RECV)
+        {
+            recv_count++;
+            size = wc.byte_len;
+        }
+        else
+        {
+            FATAL_ERROR("Expected IBV_WC_SEND or IBV_WC_RECV event, got something different.");
+        }
+    }
+
+    if(send_count != 1 || recv_count != 1)
+    {
+        FATAL_ERROR("Expected exactly 1 send and 1 recv, got %d sends and %d receives", send_count, recv_count);
     }
 }
 
