@@ -49,7 +49,8 @@ int main(int argc, char *argv[])
     {
         RdmaServer server(buf_size, buf_size, addr, port);
         server.wait_until_connected();
-
+        conn_timer.reset();
+        
         Timer timer("server");
         for(int i = 0; i < num_trials; i++)
         {
@@ -63,7 +64,8 @@ int main(int argc, char *argv[])
     {
         RdmaClient client(buf_size, buf_size, addr, port);
         client.wait_until_connected();
-
+        conn_timer.reset();
+        
         Timer timer("client");
         for(int i = 0; i < num_trials; i++)
         {
