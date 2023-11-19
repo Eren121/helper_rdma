@@ -7,11 +7,11 @@ RdmaBase::RdmaBase(uint32_t send_buf_sz, uint32_t recv_buf_sz)
 {
     // Create RDMA communication manager event channel
     m_event_channel = rdma_create_event_channel();
-    ENSURE_ERRNO(m_event_channel != nullptr);
+    HENSURE_ERRNO(m_event_channel != nullptr);
 
     // Create RDMA communication manager ID
     // RDMA_PS_TCP == RC QP (Reliable Connection Queue Pair, like TCP)
-    ENSURE_ERRNO(rdma_create_id(m_event_channel, &m_connection_id, nullptr, RDMA_PS_TCP) == 0);
+    HENSURE_ERRNO(rdma_create_id(m_event_channel, &m_connection_id, nullptr, RDMA_PS_TCP) == 0);
 }
 
 RdmaBase::~RdmaBase()
@@ -21,7 +21,7 @@ RdmaBase::~RdmaBase()
 
     if(m_connection_id)
     {
-        ENSURE_ERRNO(rdma_destroy_id(m_connection_id) == 0);
+        HENSURE_ERRNO(rdma_destroy_id(m_connection_id) == 0);
         m_connection_id = nullptr;
     }
 
@@ -33,13 +33,13 @@ RdmaBase::~RdmaBase()
 
     if(m_send_mr)
     {
-        ENSURE_ERRNO(ibv_dereg_mr(m_send_mr) == 0);
+        HENSURE_ERRNO(ibv_dereg_mr(m_send_mr) == 0);
         m_send_mr = nullptr;
     }
 
     if(m_recv_mr)
     {
-        ENSURE_ERRNO(ibv_dereg_mr(m_recv_mr) == 0);
+        HENSURE_ERRNO(ibv_dereg_mr(m_recv_mr) == 0);
         m_recv_mr = nullptr;
     }
 }
@@ -117,12 +117,12 @@ void RdmaBase::wait_for_recv(uint32_t& size)
 rdma_cm_event RdmaBase::wait_cm_event()
 {
     rdma_cm_event* event = nullptr;
-    ENSURE_ERRNO(rdma_get_cm_event(m_event_channel, &event) == 0);
+    HENSURE_ERRNO(rdma_get_cm_event(m_event_channel, &event) == 0);
 
     // The event needs to be copied because acknowledging the event frees it
     rdma_cm_event copy = *event;
 
-    ENSURE_ERRNO(rdma_ack_cm_event(event) == 0);
+    HENSURE_ERRNO(rdma_ack_cm_event(event) == 0);
 
     return copy;
 }
@@ -139,7 +139,7 @@ ibv_wc RdmaBase::wait_event()
     while(true)
     {
         const int num_completions = ibv_poll_cq(m_cq, 1, &ret);
-        ENSURE_ERRNO(num_completions >= 0);
+        HENSURE_ERRNO(num_completions >= 0);
 
         if(num_completions == 0)
         {
@@ -178,7 +178,7 @@ void RdmaBase::run_event_loop()
         rdma_cm_event event_copy = *event;
         // Each event should be acknowledged
         // This also free the event
-        ENSURE_ERRNO(rdma_ack_cm_event(event) == 0);
+        HENSURE_ERRNO(rdma_ack_cm_event(event) == 0);
 
         printf("received rdcma_cm event id=%d\n", (int) event_copy.event);
 
@@ -207,16 +207,16 @@ void RdmaBase::setup_context(ibv_context* const context)
     m_context = context;
 
     m_pd = ibv_alloc_pd(context);
-    ENSURE_ERRNO(m_pd != nullptr);
+    HENSURE_ERRNO(m_pd != nullptr);
 
     m_comp_channel = ibv_create_comp_channel(context);
-    ENSURE_ERRNO(m_comp_channel != nullptr);
+    HENSURE_ERRNO(m_comp_channel != nullptr);
 
     const int cq_size = 1'000;
     m_cq = ibv_create_cq(context, cq_size, nullptr, m_comp_channel, 0);
-    ENSURE_ERRNO(m_cq != nullptr);
+    HENSURE_ERRNO(m_cq != nullptr);
 
-    ENSURE_ERRNO(ibv_req_notify_cq(m_cq, 0) == 0);
+    HENSURE_ERRNO(ibv_req_notify_cq(m_cq, 0) == 0);
 
     /*
     // Function pointer returning void* and taking one void* parameter
@@ -227,17 +227,17 @@ void RdmaBase::setup_context(ibv_context* const context)
     };
 
     // Launch thread
-    ENSURE_ERRNO(pthread_create(&m_handler_thread, nullptr, handler_pthread, this) == 0);
+    HENSURE_ERRNO(pthread_create(&m_handler_thread, nullptr, handler_pthread, this) == 0);
     */
 
     // Register memory region
     const int access = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE;
 
     m_send_mr = ibv_reg_mr(m_pd, m_send_buf.data(), m_send_buf.size(), access);
-    ENSURE_ERRNO(m_send_mr != nullptr);
+    HENSURE_ERRNO(m_send_mr != nullptr);
 
     m_recv_mr = ibv_reg_mr(m_pd, m_recv_buf.data(), m_recv_buf.size(), access);
-    ENSURE_ERRNO(m_recv_mr != nullptr);
+    HENSURE_ERRNO(m_recv_mr != nullptr);
 }
 
 void RdmaBase::poll_handler()
@@ -253,15 +253,15 @@ void RdmaBase::poll_handler()
 
         ibv_wc wc{};
 
-        ENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
-        ENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
+        HENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
+        HENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
 
         ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
 
         while(1)
         {
             const int num_completions = ibv_poll_cq(cq, 1, &wc);
-            ENSURE_ERRNO(num_completions >= 0);
+            HENSURE_ERRNO(num_completions >= 0);
 
             if(num_completions == 0)
             {
@@ -318,7 +318,7 @@ void RdmaBase::post_receive()
     sge.lkey = m_recv_mr->lkey;
 
     assert(m_qp != nullptr);
-    ENSURE_ERRNO(ibv_post_recv(m_qp, &wr, &bad_wr) == 0);
+    HENSURE_ERRNO(ibv_post_recv(m_qp, &wr, &bad_wr) == 0);
 }
 
 void RdmaBase::post_send(uint32_t size)
@@ -346,7 +346,7 @@ void RdmaBase::post_send(uint32_t size)
     sge.lkey = m_send_mr->lkey;
 
     assert(m_qp != nullptr);
-    ENSURE_ERRNO(ibv_post_send(m_qp, &wr, &bad_wr) == 0);
+    HENSURE_ERRNO(ibv_post_send(m_qp, &wr, &bad_wr) == 0);
 }
 
 void RdmaBase::build_qp_init_attr(ibv_cq* const cq, ibv_qp_init_attr* qp_attr)

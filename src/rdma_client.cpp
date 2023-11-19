@@ -12,8 +12,8 @@ RdmaClient::RdmaClient(uint32_t send_buf_sz, uint32_t recv_buf_sz, const std::st
     addr.sin_family = AF_INET;
     addr.sin_port = server_port;
 
-    ENSURE_ERRNO(inet_aton(server_addr.c_str(), reinterpret_cast<in_addr*>(&addr.sin_addr.s_addr)) >= 0);
-    ENSURE_ERRNO(rdma_resolve_addr(m_connection_id, nullptr, reinterpret_cast<sockaddr*>(&addr), timeout_ms) == 0);
+    HENSURE_ERRNO(inet_aton(server_addr.c_str(), reinterpret_cast<in_addr*>(&addr.sin_addr.s_addr)) >= 0);
+    HENSURE_ERRNO(rdma_resolve_addr(m_connection_id, nullptr, reinterpret_cast<sockaddr*>(&addr), timeout_ms) == 0);
 }
 
 RdmaClient::~RdmaClient()
@@ -57,7 +57,7 @@ void RdmaClient::on_addr_resolved(rdma_cm_id* const id)
 
     ibv_qp_init_attr attr{};
     build_qp_init_attr(m_cq, &attr);
-    ENSURE_ERRNO(rdma_create_qp(id, m_pd, &attr) == 0);
+    HENSURE_ERRNO(rdma_create_qp(id, m_pd, &attr) == 0);
 
     // The ID that will be use for send/recv
     m_qp = id->qp;
@@ -68,13 +68,13 @@ void RdmaClient::on_addr_resolved(rdma_cm_id* const id)
     post_receive();
 
     const int timeout_ms = 1'000 * 60; // 1min
-    ENSURE_ERRNO(rdma_resolve_route(id, timeout_ms) == 0);
+    HENSURE_ERRNO(rdma_resolve_route(id, timeout_ms) == 0);
 }
 
 void RdmaClient::on_route_resolved(rdma_cm_id* const id)
 {
     rdma_conn_param param{};
-    ENSURE_ERRNO(rdma_connect(id, &param) == 0);
+    HENSURE_ERRNO(rdma_connect(id, &param) == 0);
 }
 
 void RdmaClient::on_connect(rdma_cm_id* const id)
@@ -93,7 +93,7 @@ void RdmaClient::on_disconnect(rdma_cm_id* const id)
     puts("on_disconnect");
 
     rdma_destroy_qp(id);
-    ENSURE_ERRNO(rdma_destroy_id(id) == 0);
+    HENSURE_ERRNO(rdma_destroy_id(id) == 0);
 }
 
 void RdmaClient::wait_until_connected()

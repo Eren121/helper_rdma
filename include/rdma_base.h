@@ -184,7 +184,7 @@ public:
 
     void disconnect()
     {
-        ENSURE_ERRNO(rdma_disconnect(m_connection_id) == 0);
+        HENSURE_ERRNO(rdma_disconnect(m_connection_id) == 0);
     }
 
     Callback on_recv_complete;

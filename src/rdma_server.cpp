@@ -10,13 +10,13 @@ RdmaServer::RdmaServer(uint32_t send_buf_sz, uint32_t recv_buf_sz, const std::st
 
     const int backlog = 10;
     
-    ENSURE_ERRNO(rdma_bind_addr(m_connection_id, reinterpret_cast<sockaddr*>(&addr)) == 0);
-    ENSURE_ERRNO(rdma_listen(m_connection_id, backlog) == 0);
+    HENSURE_ERRNO(rdma_bind_addr(m_connection_id, reinterpret_cast<sockaddr*>(&addr)) == 0);
+    HENSURE_ERRNO(rdma_listen(m_connection_id, backlog) == 0);
 }
 
 RdmaServer::~RdmaServer()
 {
-    //ENSURE(pthread_cancel(m_handler_thread) == 0);
+    //HENSURE(pthread_cancel(m_handler_thread) == 0);
 }
 
 bool RdmaServer::on_event_received(rdma_cm_event* const event)
@@ -50,7 +50,7 @@ void RdmaServer::on_conn_request(rdma_cm_id* const id)
     
     ibv_qp_init_attr attr{};
     build_qp_init_attr(m_cq, &attr);
-    ENSURE_ERRNO(rdma_create_qp(id, m_pd, &attr) == 0);
+    HENSURE_ERRNO(rdma_create_qp(id, m_pd, &attr) == 0);
     
     // The ID that will be use for send/recv
     m_qp = id->qp;
@@ -61,7 +61,7 @@ void RdmaServer::on_conn_request(rdma_cm_id* const id)
     post_receive();
 
     rdma_conn_param param{};
-    ENSURE_ERRNO(rdma_accept(id, &param) == 0);
+    HENSURE_ERRNO(rdma_accept(id, &param) == 0);
 }
 
 void RdmaServer::on_conn_established(void* user_context)
@@ -73,7 +73,7 @@ void RdmaServer::on_disconnect(rdma_cm_id* const id)
     puts("on_disconnect");
     
     rdma_destroy_qp(id);
-    ENSURE_ERRNO(rdma_destroy_id(id) == 0);
+    HENSURE_ERRNO(rdma_destroy_id(id) == 0);
 }
 
 void RdmaServer::wait_until_connected()

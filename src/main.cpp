@@ -34,7 +34,7 @@ private:
 
 int main(int argc, char *argv[])
 {
-    ENSURE(argc >= 4);
+    HENSURE(argc >= 4);
 
     // Get cmd arguments <-c|-s> <address> <port> <buf_size> <num_trials> of the server
     const std::string addr = argv[2];
