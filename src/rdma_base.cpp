@@ -342,7 +342,7 @@ void RdmaBase::post_send(uint32_t size)
     //printf("%p/%p\n", m_buf.data(), m_mr->addr);
 
     sge.addr = (uintptr_t) m_send_buf.data();
-    sge.length = (size == 0 ? m_send_buf.size() : size);
+    sge.length = size;
     sge.lkey = m_send_mr->lkey;
 
     assert(m_qp != nullptr);

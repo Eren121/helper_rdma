@@ -177,9 +177,9 @@ public:
 
     /**
      * Post a send work request (WR).
-     * @param size The size of the data to send. If this value is zero, then send the entire buffer.
+     * @param size The size of the data to send.
      */
-    void post_send(uint32_t size = 0);
+    void post_send(uint32_t size);
 
 
     void disconnect()
