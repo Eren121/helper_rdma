@@ -181,6 +181,24 @@ public:
      */
     void post_send(uint32_t size);
 
+    /**
+     * Post a write work request.
+     * @param send_buf The buffer to send.
+     * Should point in the sending buffer of this class.
+     * @param remote_addr, rkey The same fields as in `ibv_send_wr.rdma`.
+     * @note This will **not** generate a CQE.
+     */
+    void post_write(const Buffer& send_buf, uint64_t remote_addr, uint32_t rkey);
+
+    /**
+     * Post a write with immediate work request.
+     * @param send_buf The buffer to send.
+     * Should point in the sending buffer of this class.
+     * @param remote_addr, rkey The same fields as in `ibv_send_wr.rdma`.
+     * @param payload The immediate data.
+     * @note This will **not** generate a CQE.
+     */
+    void post_write_imm(const Buffer& send_buf, uint64_t remote_addr, uint32_t rkey, uint32_t payload);
 
     void disconnect()
     {

@@ -313,7 +313,7 @@ void RdmaBase::post_receive()
     wr.sg_list = &sge;
     wr.num_sge = 1;
 
-    sge.addr = (uintptr_t) m_recv_buf.data();
+    sge.addr = reinterpret_cast<uintptr_t>(m_recv_buf.data());
     sge.length = m_recv_buf.size();
     sge.lkey = m_recv_mr->lkey;
 
@@ -324,10 +324,11 @@ void RdmaBase::post_receive()
 void RdmaBase::post_send(uint32_t size)
 {
     ibv_send_wr wr;
-    ibv_send_wr* bad_wr = nullptr;
-    ibv_sge sge;
-
     memset(&wr, 0, sizeof(wr));
+
+    ibv_send_wr* bad_wr = nullptr;
+
+    ibv_sge sge;
     memset(&sge, 0, sizeof(sge));
 
     // Only 1 scatter/gather entry (SGE)
@@ -339,10 +340,67 @@ void RdmaBase::post_send(uint32_t size)
     wr.sg_list = &sge;
     wr.num_sge = 1;
 
-    //printf("%p/%p\n", m_buf.data(), m_mr->addr);
-
-    sge.addr = (uintptr_t) m_send_buf.data();
+    sge.addr = reinterpret_cast<uintptr_t>(m_send_buf.data());
     sge.length = size;
+    sge.lkey = m_send_mr->lkey;
+
+    assert(m_qp != nullptr);
+    HENSURE_ERRNO(ibv_post_send(m_qp, &wr, &bad_wr) == 0);
+}
+
+void RdmaBase::post_write(const Buffer& send_buf, uint64_t remote_addr, uint32_t rkey)
+{
+    ibv_send_wr wr;
+    memset(&wr, 0, sizeof(wr));
+
+    ibv_send_wr* bad_wr = nullptr;
+
+    ibv_sge sge;
+    memset(&sge, 0, sizeof(sge));
+
+    // Only 1 scatter/gather entry (SGE)
+
+    wr.opcode = IBV_WR_RDMA_WRITE;
+    wr.wr_id = 123; // Arbitrary
+    wr.next = nullptr;
+    wr.sg_list = &sge;
+    wr.num_sge = 1;
+
+    wr.wr.rdma.remote_addr = remote_addr;
+    wr.wr.rdma.rkey = rkey;
+
+    sge.addr = reinterpret_cast<uintptr_t>(send_buf.data);
+    sge.length = send_buf.size;
+    sge.lkey = m_send_mr->lkey;
+
+    assert(m_qp != nullptr);
+    HENSURE_ERRNO(ibv_post_send(m_qp, &wr, &bad_wr) == 0);
+}
+
+void RdmaBase::post_write_imm(const RdmaBase::Buffer& send_buf, uint64_t remote_addr, uint32_t rkey, uint32_t payload)
+{
+    ibv_send_wr wr;
+    memset(&wr, 0, sizeof(wr));
+
+    ibv_send_wr* bad_wr = nullptr;
+
+    ibv_sge sge;
+    memset(&sge, 0, sizeof(sge));
+
+    // Only 1 scatter/gather entry (SGE)
+
+    wr.opcode = IBV_WR_RDMA_WRITE_WITH_IMM;
+    wr.wr_id = 123; // Arbitrary
+    wr.next = nullptr;
+    wr.sg_list = &sge;
+    wr.num_sge = 1;
+    wr.imm_data = payload;
+
+    wr.wr.rdma.remote_addr = remote_addr;
+    wr.wr.rdma.rkey = rkey;
+
+    sge.addr = reinterpret_cast<uintptr_t>(send_buf.data);
+    sge.length = send_buf.size;
     sge.lkey = m_send_mr->lkey;
 
     assert(m_qp != nullptr);
