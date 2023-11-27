@@ -60,6 +60,11 @@ public:
     Buffer get_recv_buf();
 
     /**
+     * @returns The `rkey` of the receiving buffer.
+     */
+    uint32_t get_recv_rkey();
+
+    /**
      * Wait the next RDMA connection manager event.
      * Wait only one event.
      * Blocking until an event occurs.
@@ -111,6 +116,11 @@ public:
      * This should be less or equals the receiving buffer size.
      */
     void wait_for_recv(uint32_t& size);
+
+    /**
+     * Same as `wait_for_recv()` but with a payload.
+     */
+    void wait_for_recv_payload(uint32_t& size, uint32_t& payload);
 
     /**
      * Send a message. Each message has a response.

@@ -60,6 +60,11 @@ RdmaBase::Buffer RdmaBase::get_recv_buf()
     };
 }
 
+uint32_t RdmaBase::get_recv_rkey()
+{
+    return m_recv_mr->rkey;
+}
+
 void RdmaBase::wait_for_send()
 {
     const ibv_wc wc = wait_event();
@@ -112,6 +117,20 @@ void RdmaBase::wait_for_recv(uint32_t& size)
 
     // `ibv_wc.byte_len` stores the actual data received
     size = wc.byte_len;
+}
+
+void RdmaBase::wait_for_recv_payload(uint32_t& size, uint32_t& payload)
+{
+    const ibv_wc wc = wait_event();
+
+    if(!(wc.opcode & IBV_WC_RECV) || !(wc.wc_flags & IBV_WC_WITH_IMM))
+    {
+        FATAL_ERROR("Next event should be IBV_WC_RECV");
+    }
+
+    // `ibv_wc.byte_len` stores the actual data received
+    size = wc.byte_len;
+    payload = wc.imm_data;
 }
 
 rdma_cm_event RdmaBase::wait_cm_event()
