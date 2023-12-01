@@ -189,7 +189,7 @@ public:
      * Post a send work request (WR).
      * @param size The size of the data to send.
      */
-    void post_send(uint32_t size);
+    void post_send(uint32_t size, bool cqe_event = true);
 
     /**
      * Post a write work request.

@@ -340,7 +340,7 @@ void RdmaBase::post_receive()
     HENSURE_ERRNO(ibv_post_recv(m_qp, &wr, &bad_wr) == 0);
 }
 
-void RdmaBase::post_send(uint32_t size)
+void RdmaBase::post_send(uint32_t size, bool cqe_event)
 {
     ibv_send_wr wr;
     memset(&wr, 0, sizeof(wr));
@@ -353,7 +353,12 @@ void RdmaBase::post_send(uint32_t size)
     // Only 1 scatter/gather entry (SGE)
 
     wr.opcode = IBV_WR_SEND;
-    wr.send_flags = IBV_SEND_SIGNALED;
+
+    if(cqe_event)
+    {
+        wr.send_flags = IBV_SEND_SIGNALED;
+    }
+    
     wr.wr_id = 123; // Arbitrary
     wr.next = nullptr;
     wr.sg_list = &sge;
