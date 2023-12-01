@@ -196,7 +196,7 @@ public:
      * @param send_buf The buffer to send.
      * Should point in the sending buffer of this class.
      * @param remote_addr, rkey The same fields as in `ibv_send_wr.rdma`.
-     * @note This will **not** generate a CQE.
+     * @note This will **not** generate a CQE neither on the sender or receiver side.
      */
     void post_write(const Buffer& send_buf, uint64_t remote_addr, uint32_t rkey);
 
@@ -206,7 +206,7 @@ public:
      * Should point in the sending buffer of this class.
      * @param remote_addr, rkey The same fields as in `ibv_send_wr.rdma`.
      * @param payload The immediate data.
-     * @note This will **not** generate a CQE.
+     * @note This will **not** generate a CQE on the sender side, but it will generate one on the receiver side.
      */
     void post_write_imm(const Buffer& send_buf, uint64_t remote_addr, uint32_t rkey, uint32_t payload);
 
