@@ -168,19 +168,6 @@ public:
 
     void run_event_loop();
 
-    using Callback = std::function<void()>;
-
-    /**
-     * Called when the connection is established.
-     * The queue pair is ready in the callback.
-     * 
-     * The callback should be called by the child class.
-     */
-    void set_connection_established_callback(Callback callback)
-    {
-        m_cb_connection_ready = callback;
-    }
-
     /**
      * Post a receive work request (WR)
      */
@@ -216,16 +203,11 @@ public:
         HENSURE_ERRNO(rdma_disconnect(m_connection_id) == 0);
     }
 
-    Callback on_recv_complete;
-    Callback on_send_complete;
-
 protected:
     static void build_qp_init_attr(ibv_cq* const cq, ibv_qp_init_attr* out);
 
     // returns false to stop the RDMA connection, or true to continue the polling loop.
     virtual bool on_event_received(rdma_cm_event* const event) = 0;
-
-    virtual void poll_handler();
 
     // Setup the context (if not already exists) from the ibv_context
     void setup_context(ibv_context* const context);
@@ -255,9 +237,6 @@ protected:
     ibv_comp_channel* m_comp_channel = nullptr;
 
     pthread_t m_handler_thread;
-
-    Callback m_cb_connection_ready;
-    Callback m_cb_qp_ready;
 
 private:
     bool m_event_alive{false};

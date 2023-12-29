@@ -258,66 +258,6 @@ void RdmaBase::setup_context(ibv_context* const context)
     HENSURE_ERRNO(m_recv_mr != nullptr);
 }
 
-void RdmaBase::poll_handler()
-{
-    ibv_cq* cq;
-    void* user_context = nullptr;
-
-    while(1)
-    {
-        // The thread will never stops
-        // It will be blocking inside `ibv_get_cq_event()` forever when the connection stops
-        // But it just works anyway, when `main()` exits, this thread will be killed
-
-        ibv_wc wc{};
-
-        HENSURE_ERRNO(ibv_get_cq_event(m_comp_channel, &cq, &user_context) == 0);
-        HENSURE_ERRNO(ibv_req_notify_cq(cq, 0) == 0);
-
-        ibv_ack_cq_events(cq, 1); // Each event should be acknowledged
-
-        while(1)
-        {
-            const int num_completions = ibv_poll_cq(cq, 1, &wc);
-            HENSURE_ERRNO(num_completions >= 0);
-
-            if(num_completions == 0)
-            {
-                break;
-            }
-
-            if(wc.status != IBV_WC_SUCCESS)
-            {
-                FATAL_ERROR("Failed status %s (%d) for wr_id %d\n",
-                            ibv_wc_status_str(wc.status),
-                            wc.status,
-                            (int) wc.wr_id);
-            }
-
-            if(wc.opcode & IBV_WC_RECV)
-            {
-                //printf("received message: %zu\n", m_buf.size() * sizeof(m_buf[0]));
-                //printf("Received: %s\n", m_buf.data());
-
-                if(on_recv_complete)
-                {
-                    on_recv_complete();
-                }
-            } else if(wc.opcode == IBV_WC_SEND)
-            {
-                printf("send completed successfully.\n");
-
-                if(on_send_complete)
-                {
-                    on_send_complete();
-                }
-            }
-        }
-    }
-
-    puts("exit polling thread");
-}
-
 void RdmaBase::post_receive()
 {
     ibv_recv_wr wr;

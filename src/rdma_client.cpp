@@ -80,12 +80,6 @@ void RdmaClient::on_route_resolved(rdma_cm_id* const id)
 void RdmaClient::on_connect(rdma_cm_id* const id)
 {
     puts("on_connect");
-
-    // Call callback
-    if(m_cb_connection_ready)
-    {
-        m_cb_connection_ready();
-    }
 }
 
 void RdmaClient::on_disconnect(rdma_cm_id* const id)
