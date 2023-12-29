@@ -24,7 +24,7 @@
 #endif
 
 #ifndef FATAL_ERROR
-#define FATAL_ERROR(...) printf("%s:%d: ", __FILE__, __LINE__); helper_rdma::fatal_error(__VA_ARGS__)
+#define FATAL_ERROR(...) fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); helper_rdma::fatal_error(__VA_ARGS__)
 #endif
 
 namespace helper_rdma
