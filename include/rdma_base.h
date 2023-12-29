@@ -97,6 +97,7 @@ public:
      * Wait until data is sent.
      * Does not post any "send" request, this should have been post beforehand.
      * Blocking.
+     * @note Throw an error if the next operation in the CQ is not a IBV_WC_SEND.
      */
     void wait_for_send();
 
@@ -105,6 +106,7 @@ public:
      * Blocking.
      * @param[out] size The actual size of the data received.
      * This should be less or equals the receiving buffer size.
+     * @note Throw an error if the next two operations are not 1 send and 1 receive.
      */
     void wait_for_1send_1recv(uint32_t& size);
 
@@ -114,12 +116,13 @@ public:
      * Blocking.
      * @param[out] size The actual size of the data received.
      * This should be less or equals the receiving buffer size.
+     * @note Throw an error if the next operation in the CQ is not a IBV_WC_RECV.
      */
     void wait_for_recv(uint32_t& size);
 
     /**
      * Same as `wait_for_recv()` but with a payload.
-     * The other difference is that it ignores all completion queue event which are not "recv with immediate".
+     * The other difference is that it ignores all CQEs which are not "recv with immediate".
      */
     void wait_for_recv_payload(uint32_t& size, uint32_t& payload);
 
@@ -166,8 +169,6 @@ public:
         wait_for_send();
     }
 
-    void run_event_loop();
-
     /**
      * Post a receive work request (WR)
      */
@@ -176,6 +177,7 @@ public:
     /**
      * Post a send work request (WR).
      * @param size The size of the data to send.
+     * @param cqe_event If true, add IBV_SEND_SIGNALED to the send flags.
      */
     void post_send(uint32_t size, bool cqe_event = true);
 

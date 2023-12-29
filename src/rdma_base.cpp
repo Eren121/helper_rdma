@@ -180,35 +180,6 @@ ibv_wc RdmaBase::wait_event()
     return ret;
 }
 
-void RdmaBase::run_event_loop()
-{
-    printf("start listen to rdma_cm events\n");
-
-    while(true)
-    {
-        rdma_cm_event* event = nullptr;
-
-        if(rdma_get_cm_event(m_event_channel, &event) != 0)
-        {
-            break;
-        }
-
-        rdma_cm_event event_copy = *event;
-        // Each event should be acknowledged
-        // This also free the event
-        HENSURE_ERRNO(rdma_ack_cm_event(event) == 0);
-
-        printf("received rdcma_cm event id=%d\n", (int) event_copy.event);
-
-        if(!on_event_received(&event_copy))
-        {
-            break;
-        }
-    }
-
-    printf("stop listen to rdma_cm events\n");
-}
-
 void RdmaBase::setup_context(ibv_context* const context)
 {
     // We can't handle more than one context
