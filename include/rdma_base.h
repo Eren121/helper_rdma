@@ -241,10 +241,6 @@ protected:
     pthread_t m_handler_thread;
 
 private:
-    bool m_event_alive{false};
-    ibv_cq* m_event_cq{nullptr};
-    void* m_event_user_context{nullptr};
-
     std::vector<uint8_t> m_send_buf;
     std::vector<uint8_t> m_recv_buf;
 };
