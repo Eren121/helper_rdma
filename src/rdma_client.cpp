@@ -1,4 +1,5 @@
 #include "rdma_client.h"
+#include "spdlog/spdlog.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -11,6 +12,9 @@ RdmaClient::RdmaClient(uint32_t send_buf_sz, uint32_t recv_buf_sz, const std::st
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_port = server_port;
+
+    spdlog::info("Created RDMA client to connect on address {}:{}", server_addr, server_port);
+    spdlog::info("Created RDMA client buffer sizes: send={}, recv={}", send_buf_sz, recv_buf_sz);
 
     HENSURE_ERRNO(inet_aton(server_addr.c_str(), reinterpret_cast<in_addr*>(&addr.sin_addr.s_addr)) >= 0);
     HENSURE_ERRNO(rdma_resolve_addr(m_connection_id, nullptr, reinterpret_cast<sockaddr*>(&addr), timeout_ms) == 0);
@@ -53,6 +57,8 @@ bool RdmaClient::on_event_received(rdma_cm_event* const event)
 
 void RdmaClient::on_addr_resolved(rdma_cm_id* const id)
 {
+    spdlog::info("RDMA connection address resolved");
+
     setup_context(id->verbs);
 
     ibv_qp_init_attr attr{};
@@ -73,18 +79,20 @@ void RdmaClient::on_addr_resolved(rdma_cm_id* const id)
 
 void RdmaClient::on_route_resolved(rdma_cm_id* const id)
 {
+    spdlog::info("RDMA route resolved");
+
     rdma_conn_param param{};
     HENSURE_ERRNO(rdma_connect(id, &param) == 0);
 }
 
 void RdmaClient::on_connect(rdma_cm_id* const id)
 {
-    puts("on_connect");
+    spdlog::info("RDMA connected");
 }
 
 void RdmaClient::on_disconnect(rdma_cm_id* const id)
 {
-    puts("on_disconnect");
+    spdlog::info("RDMA connection disconnected");
 
     rdma_destroy_qp(id);
     HENSURE_ERRNO(rdma_destroy_id(id) == 0);
@@ -92,6 +100,8 @@ void RdmaClient::on_disconnect(rdma_cm_id* const id)
 
 void RdmaClient::wait_until_connected()
 {
+    spdlog::info("Waiting RDMA connection to server...");
+
     bool stop = false;
     while(!stop)
     {
@@ -116,4 +126,6 @@ void RdmaClient::wait_until_connected()
                 break;
         }
     }
+
+    spdlog::info("RDMA connection established");
 }

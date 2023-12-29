@@ -238,8 +238,6 @@ protected:
     ibv_mr* m_recv_mr = nullptr;
     ibv_comp_channel* m_comp_channel = nullptr;
 
-    pthread_t m_handler_thread;
-
 private:
     std::vector<uint8_t> m_send_buf;
     std::vector<uint8_t> m_recv_buf;

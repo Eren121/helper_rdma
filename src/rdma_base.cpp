@@ -207,18 +207,6 @@ void RdmaBase::setup_context(ibv_context* const context)
 
     HENSURE_ERRNO(ibv_req_notify_cq(m_cq, 0) == 0);
 
-    /*
-    // Function pointer returning void* and taking one void* parameter
-    void* (* handler_pthread)(void*) = [](void* user_arg) -> void* {
-        RdmaBase* const self = static_cast<RdmaBase*>(user_arg);
-        self->poll_handler();
-        return nullptr;
-    };
-
-    // Launch thread
-    HENSURE_ERRNO(pthread_create(&m_handler_thread, nullptr, handler_pthread, this) == 0);
-    */
-
     // Register memory region
     const int access = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE;
 
