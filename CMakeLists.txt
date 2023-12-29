@@ -13,7 +13,7 @@ add_library(
 find_package(Threads REQUIRED)
 
 target_include_directories(helper_rdma PUBLIC include)
-target_link_libraries(helper_rdma PUBLIC ibverbs rdmacm Threads::Threads)
+target_link_libraries(helper_rdma PUBLIC ibverbs rdmacm Threads::Threads spdlog::spdlog)
 
 add_executable(helper_rdma_test src/main.cpp)
 target_link_libraries(helper_rdma_test PUBLIC helper_rdma)
