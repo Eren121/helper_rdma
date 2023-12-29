@@ -123,9 +123,8 @@ void RdmaBase::wait_for_recv_payload(uint32_t& size, uint32_t& payload)
 {
     const ibv_wc wc = wait_event();
 
-    if(!(wc.opcode & IBV_WC_RECV) || !(wc.wc_flags & IBV_WC_WITH_IMM))
+    while(!(wc.opcode & IBV_WC_RECV) || !(wc.wc_flags & IBV_WC_WITH_IMM))
     {
-        FATAL_ERROR("Next event should be IBV_WC_RECV");
     }
 
     // `ibv_wc.byte_len` stores the actual data received

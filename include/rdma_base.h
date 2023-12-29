@@ -119,6 +119,7 @@ public:
 
     /**
      * Same as `wait_for_recv()` but with a payload.
+     * The other difference is that it ignores all completion queue event which are not "recv with immediate".
      */
     void wait_for_recv_payload(uint32_t& size, uint32_t& payload);
 
